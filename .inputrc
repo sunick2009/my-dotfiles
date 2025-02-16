@@ -1,0 +1,24 @@
+set completion-ignore-case on
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+
+set editing-mode vi
+set keymap vi-insert
+
+# Reproduce the emacs behaviour for most used shortcuts in vi mode
+$if mode=vi
+"\C-a": beginning-of-line
+"\C-e": end-of-line
+"\C-l": clear-screen
+"\C-n": next-history
+"\C-p": previous-history
+"\C-w": backward-kill-word
+"\C-j": alias-expand-line
+
+"\e.": yank-last-arg
+"\e_": yank-last-arg
+$endif
+
+# https://stackoverflow.com/questions/6839273/bash-readline-equivalent-of-escape-dot-in-vi-mode
+# http://www.gnu.org/software/bash/manual/html_node/Bindable-Readline-Commands.html#Bindable-Readline-Commands
+# Also check bindkeys
