@@ -67,13 +67,31 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
     
     # 找出並修復可能的固定路徑參考
     echo "掃描並修復 .oh-my-zsh 內部可能的固定路徑..."
-    find "$HOME/.oh-my-zsh" -type f -name "*.zsh" -o -name "*.sh" | xargs grep -l "/home/" 2>/dev/null | while read -r file; do
-        echo "處理檔案: $file"
-        # 備份原始檔案
-        cp "$file" "${file}.path.backup"
-        # 替換固定的家目錄路徑為 $HOME 變數
-        sed -i "s|/home/[^/]*/|\\$HOME/|g" "$file"
-    done
+    # 使用臨時檔案存儲符合條件的檔案清單
+    TEMP_FILE=$(mktemp)
+    
+    # 分開 find 和 grep 命令，避免因為 xargs 處理空結果而卡住
+    find "$HOME/.oh-my-zsh" -type f \( -name "*.zsh" -o -name "*.sh" \) 2>/dev/null > "$TEMP_FILE"
+    
+    # 檢查是否找到任何檔案
+    if [ -s "$TEMP_FILE" ]; then
+        # 對每個找到的檔案進行 grep 檢查
+        while read -r file; do
+            if grep -q "/home/" "$file" 2>/dev/null; then
+                echo "處理檔案: $file"
+                # 備份原始檔案
+                cp "$file" "${file}.path.backup"
+                # 替換固定的家目錄路徑為 $HOME 變數
+                sed -i "s|/home/[^/]*/|\\$HOME/|g" "$file"
+            fi
+        done < "$TEMP_FILE"
+    else
+        echo "沒有找到需要處理的 zsh 或 sh 檔案。"
+    fi
+    
+    # 刪除臨時檔案
+    rm -f "$TEMP_FILE"
+    echo "路徑修復完成。"
 fi
 
 # 建立配置文件的軟連接
@@ -119,7 +137,7 @@ nvim -e -u /usr/share/nvim/sysinit.vim -i NONE -c "PlugInstall|q" -c "qa" \
 
 # 安裝 Hack Fonts
 echo "開始安裝 Hack Fonts..."
-# 假設字型檔案存放在 "$HOME/dotfiles/fonts" 且已是 patched 版本
+# 假設字型檔案存放在 "$HOME/my-dotfiles/fonts" 且已是 patched 版本
 if [ -d "$HOME/my-dotfiles/fonts" ]; then
     # 指定使用者字型安裝路徑 (如需系統安裝請考慮 /usr/local/share/fonts, 並加入 sudo)
     font_dir="$HOME/.local/share/fonts/HackFonts"
