@@ -25,18 +25,59 @@ echo "使用的包管理器：$PM"
 $UPDATE_CMD
 $INSTALL_CMD zsh git curl tmux vi fontconfig
 
-# 如果沒有安裝 oh‑my‑zsh，則使用本地版本安裝
+# 處理 oh-my-zsh 安裝與連結
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    # 如果使用者沒有 oh-my-zsh，則建立軟連接到我們的版本
     ln -sf "$HOME/dotfiles/.oh-my-zsh" "$HOME/.oh-my-zsh"
     echo "已安裝本地維護的 oh-my-zsh。"
 else
-    echo "oh-my-zsh 已存在，跳過安裝步驟。"
+    # 如果已經存在 oh-my-zsh，檢查是否為我們的符號連結
+    if [ ! -L "$HOME/.oh-my-zsh" ] || [ "$(readlink "$HOME/.oh-my-zsh")" != "$HOME/dotfiles/.oh-my-zsh" ]; then
+        echo "已偵測到現有 oh-my-zsh 安裝，備份至 $HOME/.oh-my-zsh.backup"
+        mv "$HOME/.oh-my-zsh" "$HOME/.oh-my-zsh.backup"
+        ln -sf "$HOME/dotfiles/.oh-my-zsh" "$HOME/.oh-my-zsh"
+        echo "已連結至本地維護的 oh-my-zsh。"
+    else
+        echo "oh-my-zsh 已正確連結，無需變更。"
+    fi
+fi
+
+# 檢查並修復 .oh-my-zsh 內部的固定路徑問題
+echo "檢查 .oh-my-zsh 內部路徑..."
+if [ -d "$HOME/.oh-my-zsh" ]; then
+    # 檢查是否存在內部的 .oh-my-zsh 目錄或檔案
+    if [ -e "$HOME/.oh-my-zsh/.oh-my-zsh" ]; then
+        echo "發現 .oh-my-zsh 內部的 .oh-my-zsh 檔案或目錄，進行處理..."
+        # 如果是符號連結，修正指向
+        if [ -L "$HOME/.oh-my-zsh/.oh-my-zsh" ]; then
+            echo "修正內部符號連結..."
+            rm -f "$HOME/.oh-my-zsh/.oh-my-zsh"
+            ln -sf "$HOME/.oh-my-zsh" "$HOME/.oh-my-zsh/.oh-my-zsh"
+        # 如果是目錄，考慮合併或替換
+        elif [ -d "$HOME/.oh-my-zsh/.oh-my-zsh" ]; then
+            echo "發現內部 .oh-my-zsh 目錄，備份並替換..."
+            mv "$HOME/.oh-my-zsh/.oh-my-zsh" "$HOME/.oh-my-zsh/.oh-my-zsh.internal.backup"
+            ln -sf "$HOME/.oh-my-zsh" "$HOME/.oh-my-zsh/.oh-my-zsh"
+        # 如果是普通檔案，備份
+        elif [ -f "$HOME/.oh-my-zsh/.oh-my-zsh" ]; then
+            echo "發現內部 .oh-my-zsh 檔案，備份..."
+            mv "$HOME/.oh-my-zsh/.oh-my-zsh" "$HOME/.oh-my-zsh/.oh-my-zsh.file.backup"
+        fi
+    fi
+    
+    # 找出並修復可能的固定路徑參考
+    echo "掃描並修復 .oh-my-zsh 內部可能的固定路徑..."
+    find "$HOME/.oh-my-zsh" -type f -name "*.zsh" -o -name "*.sh" | xargs grep -l "/home/" 2>/dev/null | while read -r file; do
+        echo "處理檔案: $file"
+        # 備份原始檔案
+        cp "$file" "${file}.path.backup"
+        # 替換固定的家目錄路徑為 $HOME 變數
+        sed -i "s|/home/[^/]*/|\\$HOME/|g" "$file"
+    done
 fi
 
 # 建立配置文件的軟連接
 ln -sf "$HOME/dotfiles/.zshrc" "$HOME/"
-# 注意：如果先前已處理 oh‑my‑zsh 的 symlink，可考慮移除此行，避免重複
-ln -sf "$HOME/dotfiles/.oh-my-zsh" "$HOME/.oh-my-zsh"
 
 # 建立其他設定檔的軟連接
 ln -sf "$HOME/dotfiles/.config" "$HOME/"
