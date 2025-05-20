@@ -28,14 +28,14 @@ $INSTALL_CMD zsh git curl tmux vi fontconfig
 # 處理 oh-my-zsh 安裝與連結
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
     # 如果使用者沒有 oh-my-zsh，則建立軟連接到我們的版本
-    ln -sf "$HOME/dotfiles/.oh-my-zsh" "$HOME/.oh-my-zsh"
+    ln -sf "$HOME/my-dotfiles/.oh-my-zsh" "$HOME/.oh-my-zsh"
     echo "已安裝本地維護的 oh-my-zsh。"
 else
     # 如果已經存在 oh-my-zsh，檢查是否為我們的符號連結
-    if [ ! -L "$HOME/.oh-my-zsh" ] || [ "$(readlink "$HOME/.oh-my-zsh")" != "$HOME/dotfiles/.oh-my-zsh" ]; then
+    if [ ! -L "$HOME/.oh-my-zsh" ] || [ "$(readlink "$HOME/.oh-my-zsh")" != "$HOME/my-dotfiles/.oh-my-zsh" ]; then
         echo "已偵測到現有 oh-my-zsh 安裝，備份至 $HOME/.oh-my-zsh.backup"
         mv "$HOME/.oh-my-zsh" "$HOME/.oh-my-zsh.backup"
-        ln -sf "$HOME/dotfiles/.oh-my-zsh" "$HOME/.oh-my-zsh"
+        ln -sf "$HOME/my-dotfiles/.oh-my-zsh" "$HOME/.oh-my-zsh"
         echo "已連結至本地維護的 oh-my-zsh。"
     else
         echo "oh-my-zsh 已正確連結，無需變更。"
@@ -77,12 +77,12 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
 fi
 
 # 建立配置文件的軟連接
-ln -sf "$HOME/dotfiles/.zshrc" "$HOME/"
+ln -sf "$HOME/my-dotfiles/.zshrc" "$HOME/"
 
 # 建立其他設定檔的軟連接
-ln -sf "$HOME/dotfiles/.config" "$HOME/"
-ln -sf "$HOME/dotfiles/.tmux.conf" "$HOME/"
-ln -sf "$HOME/dotfiles/.inputrc" "$HOME/"
+ln -sf "$HOME/my-dotfiles/.config" "$HOME/"
+ln -sf "$HOME/my-dotfiles/.tmux.conf" "$HOME/"
+ln -sf "$HOME/my-dotfiles/.inputrc" "$HOME/"
 
 # 切換默認 shell 為 zsh
 if command -v chsh >/dev/null 2>&1; then
@@ -120,17 +120,17 @@ nvim -e -u /usr/share/nvim/sysinit.vim -i NONE -c "PlugInstall|q" -c "qa" \
 # 安裝 Hack Fonts
 echo "開始安裝 Hack Fonts..."
 # 假設字型檔案存放在 "$HOME/dotfiles/fonts" 且已是 patched 版本
-if [ -d "$HOME/dotfiles/fonts" ]; then
+if [ -d "$HOME/my-dotfiles/fonts" ]; then
     # 指定使用者字型安裝路徑 (如需系統安裝請考慮 /usr/local/share/fonts, 並加入 sudo)
     font_dir="$HOME/.local/share/fonts/HackFonts"
     mkdir -p "$font_dir"
     # 複製字型
-    cp -fvr "$HOME/dotfiles/fonts/"* "$font_dir/"
+    cp -fvr "$HOME/my-dotfiles/fonts/"* "$font_dir/"
     # 更新字型快取
     fc-cache -fv "$font_dir"
     echo "Hack Fonts 安裝完成！"
 else
-    echo "找不到字型目錄：$HOME/dotfiles/fonts，跳過 Hack Fonts 安裝。"
+    echo "找不到字型目錄：$HOME/my-dotfiles/fonts，跳過 Hack Fonts 安裝。"
 fi
 
 echo "部署完成！請重啟終端以使配置生效。"
