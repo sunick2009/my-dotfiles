@@ -11,12 +11,17 @@
 
 ## 如何使用
 
-1. 先確認腳本具備執行權限：  
+1. **重要**: 克隆儲存庫時必須使用 `--recurse-submodules` 選項，以確保所有子模組（包含 zsh 插件）都被下載，否則將導致 zsh 報錯顯示插件找不到：
+   ```sh
+   git clone --recurse-submodules -j8 https://github.com/sunick2009/my-dotfiles.git
+   ```
+
+2. 先確認腳本具備執行權限：  
    ```sh
    chmod +x main.sh
    ```
 
-2. 執行腳本：  
+3. 執行腳本：  
    ```sh
    ./main.sh
    ```
