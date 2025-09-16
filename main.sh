@@ -23,7 +23,7 @@ echo "使用的包管理器：$PM"
 
 # 更新軟件源並安裝依賴
 $UPDATE_CMD
-$INSTALL_CMD zsh git curl tmux vi fontconfig
+$INSTALL_CMD zsh git curl tmux fontconfig
 
 # 處理 oh-my-zsh 安裝與連結
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
