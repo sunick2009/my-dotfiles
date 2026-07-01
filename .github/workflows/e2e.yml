@@ -29,10 +29,21 @@ jobs:
               apt-get update -y
               apt-get install -y --no-install-recommends zsh git curl tmux ca-certificates
 
+          - name: debian-12
+            image: debian:12
+            install: |
+              apt-get update -y
+              apt-get install -y --no-install-recommends zsh git curl tmux ca-certificates
+
           - name: fedora-40
             image: fedora:40
             install: |
               dnf install -y zsh git curl tmux
+
+          - name: rocky-9
+            image: rockylinux:9
+            install: |
+              dnf install -y --allowerasing zsh git curl tmux
 
     steps:
       - uses: actions/checkout@v4

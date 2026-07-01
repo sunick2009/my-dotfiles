@@ -31,7 +31,9 @@ NC='\033[0m'
 TARGETS=(
     "ubuntu-22.04|tests/Dockerfile.ubuntu|UBUNTU_VERSION=22.04"
     "ubuntu-24.04|tests/Dockerfile.ubuntu|UBUNTU_VERSION=24.04"
+    "debian-12|tests/Dockerfile.debian|DEBIAN_VERSION=12"
     "fedora-40|tests/Dockerfile.fedora|FEDORA_VERSION=40"
+    "rocky-9|tests/Dockerfile.rocky|ROCKY_VERSION=9"
 )
 
 list_targets() {

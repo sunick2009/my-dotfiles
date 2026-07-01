@@ -1,0 +1,19 @@
+ARG DEBIAN_VERSION=12
+FROM debian:${DEBIAN_VERSION}
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        zsh git curl tmux ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+
+WORKDIR /repo
+COPY . /repo/
+
+RUN chmod +x /repo/tests/container-test.sh /repo/bootstrap-chezmoi.sh
+
+CMD ["bash", "/repo/tests/container-test.sh"]
