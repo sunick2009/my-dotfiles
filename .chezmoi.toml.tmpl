@@ -1,0 +1,7 @@
+[data]
+    name = {{ promptStringOnce . "name" "Full name" | quote }}
+    email = {{ promptStringOnce . "email" "Email address" | quote }}
+    installOhMyZsh = {{ promptBoolOnce . "installOhMyZsh" "Install Oh My Zsh (via chezmoi external)" true }}
+    installFonts = {{ promptBoolOnce . "installFonts" "Install Hack Nerd fonts" false }}
+    changeShell = {{ promptBoolOnce . "changeShell" "Change default shell to zsh (requires chsh)" false }}
+    installNeovimPlugins = {{ promptBoolOnce . "installNeovimPlugins" "Run PlugInstall on first apply" true }}

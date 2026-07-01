@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Checks for required dependencies and prints installation hints.
+# Does NOT install anything automatically.
+set -euo pipefail
+
+MISSING=()
+for cmd in zsh git curl tmux; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        MISSING+=("$cmd")
+    fi
+done
+
+if [ ${#MISSING[@]} -eq 0 ]; then
+    echo "[chezmoi] All required dependencies are present."
+    exit 0
+fi
+
+echo ""
+echo "[chezmoi] WARNING: Missing dependencies: ${MISSING[*]}"
+echo ""
+
+{{ if eq .chezmoi.os "darwin" -}}
+echo "On macOS, install missing packages with Homebrew:"
+echo "  brew install ${MISSING[*]}"
+{{- else if eq .chezmoi.os "linux" -}}
+if command -v apt-get >/dev/null 2>&1; then
+    echo "On Debian/Ubuntu, install missing packages with:"
+    echo "  sudo apt-get update && sudo apt-get install -y ${MISSING[*]}"
+elif command -v dnf >/dev/null 2>&1; then
+    echo "On Fedora/RHEL, install missing packages with:"
+    echo "  sudo dnf install -y ${MISSING[*]}"
+elif command -v pacman >/dev/null 2>&1; then
+    echo "On Arch Linux, install missing packages with:"
+    echo "  sudo pacman -S ${MISSING[*]}"
+else
+    echo "Install the following with your system package manager: ${MISSING[*]}"
+fi
+{{- end }}
+echo ""
+echo "After installing, re-run: chezmoi apply"
+exit 1

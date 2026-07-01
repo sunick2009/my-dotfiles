@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Optionally installs Hack Nerd fonts from the fonts/ directory in this repo.
+# Only runs if installFonts=true was set during chezmoi init.
+set -euo pipefail
+
+{{- if .installFonts }}
+REPO_DIR="{{ .chezmoi.sourceDir }}"
+FONTS_SRC="$REPO_DIR/fonts/mac_linux"
+
+if [ ! -d "$FONTS_SRC" ]; then
+    echo "[chezmoi] fonts/mac_linux directory not found in source repo — skipping font install."
+    exit 0
+fi
+
+{{ if eq .chezmoi.os "darwin" -}}
+FONT_DEST="$HOME/Library/Fonts/HackFonts"
+mkdir -p "$FONT_DEST"
+cp -fv "$FONTS_SRC/"*.ttf "$FONT_DEST/"
+echo "[chezmoi] Hack fonts installed to $FONT_DEST"
+
+{{- else if eq .chezmoi.os "linux" -}}
+FONT_DEST="$HOME/.local/share/fonts/HackFonts"
+mkdir -p "$FONT_DEST"
+cp -fv "$FONTS_SRC/"*.ttf "$FONT_DEST/"
+if command -v fc-cache >/dev/null 2>&1; then
+    fc-cache -fv "$FONT_DEST"
+fi
+echo "[chezmoi] Hack fonts installed to $FONT_DEST"
+{{- end }}
+{{- else }}
+echo "[chezmoi] Skipping font install (installFonts=false)."
+{{- end }}

@@ -1,0 +1,9 @@
+# chezmoi will not apply these paths to the home directory
+legacy/
+bootstrap-chezmoi.sh
+docs/
+fonts/
+README.md
+readme.md
+.gitmodules
+.DS_Store

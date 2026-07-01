@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Optionally changes the default login shell to zsh.
+# Only runs if changeShell=true was set during chezmoi init.
+set -euo pipefail
+
+{{- if .changeShell }}
+ZSH_PATH="$(command -v zsh 2>/dev/null || true)"
+if [ -z "$ZSH_PATH" ]; then
+    echo "[chezmoi] zsh not found — skipping shell change."
+    exit 0
+fi
+
+CURRENT_SHELL="$(getent passwd "$USER" 2>/dev/null | cut -d: -f7 || dscl . -read "/Users/$USER" UserShell 2>/dev/null | awk '{print $2}' || true)"
+if [ "$CURRENT_SHELL" = "$ZSH_PATH" ]; then
+    echo "[chezmoi] Default shell is already zsh."
+    exit 0
+fi
+
+echo "[chezmoi] Changing default shell to $ZSH_PATH (requires password)..."
+chsh -s "$ZSH_PATH"
+echo "[chezmoi] Shell changed. Restart your terminal to take effect."
+{{- else }}
+echo "[chezmoi] Skipping shell change (changeShell=false). To change shell manually: chsh -s \$(which zsh)"
+{{- end }}
