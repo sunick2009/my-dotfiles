@@ -1,38 +1,65 @@
 # 說明
 
-此腳本主要用途是設定及安裝開發環境，重點結合了 [Oh My Zsh](https://ohmyz.sh) 以及 [Neovim](https://neovim.io)。腳本會根據不同作業系統的套件管理工具進行相應的安裝與設定，像是使用 `dnf`、`apt` 或其他工具。
+此 repo 用於管理開發環境的 dotfiles，重點結合了 [Oh My Zsh](https://ohmyz.sh) 以及 [Neovim](https://neovim.io)。  
+支援 **Linux**（Debian/Ubuntu、Fedora/RHEL、Arch 等）與 **macOS**。
 
-## 主要功能
+管理方式採用 [chezmoi](https://www.chezmoi.io)，取代舊版的手動符號連結腳本。
 
-- **建立配置檔連結**：根據預設將配置檔（例如 [`.config`](.config) 、[`.tmux.conf`](.tmux.conf) 、[`.inputrc`](.inputrc)）連結到使用者的主目錄。
-- **變更預設 Shell**：若系統中有 `chsh` 或 `usermod` 指令，則會自動更改預設 shell 為 `zsh`。
-- **安裝 Neovim**：如果發現 neovim_install.sh 存在且具有執行權限，則會呼叫此腳本來安裝 Neovim。
-- **其他設定**：可能額外包含一些自訂設定（例如個人化的 ohmyzsh 配置）。
+---
 
-## 如何使用
+## 快速開始
 
-1. **重要**: 克隆儲存庫時必須使用 `--recurse-submodules` 選項，以確保所有子模組（包含 zsh 插件）都被下載，否則將導致 zsh 報錯顯示插件找不到：
-   ```sh
-   git clone --recurse-submodules -j8 https://github.com/sunick2009/my-dotfiles.git
-   ```
+### 1. 安裝 chezmoi
 
-2. 先確認腳本具備執行權限：  
-   ```sh
-   chmod +x main.sh
-   ```
+```sh
+# macOS
+brew install chezmoi
 
-3. 執行腳本：  
-   ```sh
-   ./main.sh
-   ```
+# Linux（下載 binary，請先確認腳本內容再執行）
+sh -c "$(curl -fsLS get.chezmoi.io)"
+```
 
-3. 腳本執行後會依序處理上述功能，並依作業系統自動選擇適合的套件管理指令，如下列範例（使用 `yum`）：
-   ```bash
-   elif command -v yum >/dev/null 2>&1; then
-       PM="yum"
-       UPDATE_CMD=""
-       INSTALL_CMD="sudo yum install -y"
-   ```
+### 2. Clone 此 repo
+
+```sh
+git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
+```
+
+### 3. 確認環境
+
+```sh
+~/my-dotfiles/bootstrap-chezmoi.sh --doctor
+```
+
+### 4. 預覽變更
+
+```sh
+~/my-dotfiles/bootstrap-chezmoi.sh --dry-run
+```
+
+### 5. 套用
+
+```sh
+~/my-dotfiles/bootstrap-chezmoi.sh --apply
+```
+
+首次執行時，chezmoi 會詢問幾個選項（名稱、Email、是否安裝 Oh My Zsh 等）。  
+詳細說明請見 [`docs/chezmoi-non-nix.md`](docs/chezmoi-non-nix.md)。
+
+---
+
+## 管理的設定檔
+
+| 來源（repo） | 套用至 |
+|-------------|--------|
+| `dot_zshrc` | `~/.zshrc` |
+| `dot_tmux.conf` | `~/.tmux.conf` |
+| `dot_inputrc` | `~/.inputrc` |
+| `dot_config/nvim/` | `~/.config/nvim/` |
+
+Oh My Zsh 與 zsh 插件由 chezmoi 於首次 apply 時自動下載，不再隨 repo 一起 vendored。
+
+---
 
 ## 插件列表
 
@@ -42,7 +69,7 @@
 - zsh-autosuggestions
 - zsh-syntax-highlighting
 
-### Neovim 插件
+### Neovim 插件（由 vim-plug 管理）
 
 - vim-airline/vim-airline
 - vim-airline/vim-airline-themes
@@ -62,6 +89,15 @@
 - tpope/vim-surround
 - arouene/vim-ansible-vault （用於 yaml, yaml.ansible）
 - hkupty/iron.nvim
+
+---
+
+## 舊版安裝方式
+
+原本的 `main.sh` 腳本已移至 [`legacy/`](legacy/) 保留。  
+舊版僅支援 Linux（Debian/Fedora），不建議用於新安裝。
+
+---
 
 ## 資料來源
 
