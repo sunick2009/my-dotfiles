@@ -1,0 +1,14 @@
+ARG FEDORA_VERSION=40
+FROM fedora:${FEDORA_VERSION}
+
+RUN dnf install -y zsh git curl tmux && \
+    dnf clean all
+
+RUN curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+
+WORKDIR /repo
+COPY . /repo/
+
+RUN chmod +x /repo/tests/container-test.sh /repo/bootstrap-chezmoi.sh
+
+CMD ["bash", "/repo/tests/container-test.sh"]
