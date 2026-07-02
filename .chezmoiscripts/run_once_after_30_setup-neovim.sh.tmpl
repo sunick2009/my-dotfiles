@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Installs vim-plug and runs PlugInstall for Neovim.
+# Only runs when installNeovimPlugins = true in chezmoi config.
+{{ if .installNeovimPlugins -}}
+set -euo pipefail
+
+PLUG_PATH="$HOME/.local/share/nvim/site/autoload/plug.vim"
+
+if ! command -v nvim >/dev/null 2>&1; then
+    echo "[chezmoi] neovim: nvim not found, skipping plugin install."
+    echo "          Install neovim and re-run: chezmoi apply"
+    exit 0
+fi
+
+if [[ ! -f "$PLUG_PATH" ]]; then
+    echo "[chezmoi] neovim: installing vim-plug..."
+    mkdir -p "$(dirname "$PLUG_PATH")"
+    curl -fLo "$PLUG_PATH" \
+        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    echo "[chezmoi] neovim: vim-plug installed."
+else
+    echo "[chezmoi] neovim: vim-plug already present, skipping download."
+fi
+
+echo "[chezmoi] neovim: running :PlugInstall (headless)..."
+nvim --headless +PlugInstall +qall 2>&1
+echo "[chezmoi] neovim: plugins installed."
+{{- else }}
+# installNeovimPlugins = false, skipping.
+{{- end }}

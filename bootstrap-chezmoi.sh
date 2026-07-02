@@ -17,19 +17,21 @@ MODE=""
 # ── Argument parsing ──────────────────────────────────────────────────────────
 
 usage() {
-    echo "Usage: $0 [--doctor | --dry-run | --apply]"
+    echo "Usage: $0 [--doctor | --dry-run | --apply | --reconfigure]"
     echo ""
-    echo "  --doctor    Check that chezmoi and dependencies are installed"
-    echo "  --dry-run   Show what chezmoi would apply (no changes made)"
-    echo "  --apply     Apply dotfiles to your home directory"
+    echo "  --doctor       Check that chezmoi and dependencies are installed"
+    echo "  --dry-run      Show what chezmoi would apply (no changes made)"
+    echo "  --apply        Apply dotfiles to your home directory"
+    echo "  --reconfigure  Re-run interactive setup (resets chezmoi config)"
     exit 1
 }
 
 case "${1:-}" in
-    --doctor)  MODE="doctor" ;;
-    --dry-run) MODE="dry-run" ;;
-    --apply)   MODE="apply" ;;
-    *)         usage ;;
+    --doctor)       MODE="doctor" ;;
+    --dry-run)      MODE="dry-run" ;;
+    --apply)        MODE="apply" ;;
+    --reconfigure)  MODE="reconfigure" ;;
+    *)              usage ;;
 esac
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -95,13 +97,31 @@ doctor() {
 }
 
 ensure_config() {
-    local cfg="$HOME/.config/chezmoi/chezmoi.toml"
-    if [[ ! -f "$cfg" ]] || ! grep -q "installOhMyZsh" "$cfg" 2>/dev/null; then
-        print_info "Running: chezmoi init --source \"$REPO_DIR\" (generates config from template)"
+    if [[ ! -f "$HOME/.config/chezmoi/chezmoi.toml" ]]; then
+        print_info "Config not found — running chezmoi init to generate it from template"
         echo ""
         chezmoi init --source "$REPO_DIR"
         echo ""
     fi
+}
+
+reconfigure() {
+    echo ""
+    echo "=== chezmoi reconfigure ==="
+    echo ""
+    check_chezmoi
+    local cfg="$HOME/.config/chezmoi/chezmoi.toml"
+    if [[ -f "$cfg" ]]; then
+        print_info "Removing existing config: $cfg"
+        rm "$cfg"
+    fi
+    echo ""
+    print_info "Running: chezmoi init --source \"$REPO_DIR\""
+    echo ""
+    chezmoi init --source "$REPO_DIR"
+    echo ""
+    print_ok "Config regenerated. Run --dry-run or --apply next."
+    echo ""
 }
 
 dry_run() {
@@ -139,7 +159,8 @@ apply() {
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 
 case "$MODE" in
-    doctor)  doctor ;;
-    dry-run) dry_run ;;
-    apply)   apply ;;
+    doctor)       doctor ;;
+    dry-run)      dry_run ;;
+    apply)        apply ;;
+    reconfigure)  reconfigure ;;
 esac
