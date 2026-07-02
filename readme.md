@@ -31,11 +31,21 @@ git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
 ~/my-dotfiles/bootstrap-chezmoi.sh --doctor
 ```
 
+偵測到缺少套件時，會根據目前系統（macOS / Ubuntu / Fedora / Arch 等）自動列出建議安裝指令，例如：
+
+```
+  Recommended install command:
+
+    sudo apt-get update && sudo apt-get install -y zsh tmux neovim
+```
+
 ### 4. 預覽變更
 
 ```sh
 ~/my-dotfiles/bootstrap-chezmoi.sh --dry-run
 ```
+
+首次執行時，chezmoi 會互動式詢問幾個選項（名稱、Email、是否安裝 Oh My Zsh 等），預設全部為 `true`。
 
 ### 5. 套用
 
@@ -43,7 +53,16 @@ git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
 ~/my-dotfiles/bootstrap-chezmoi.sh --apply
 ```
 
-首次執行時，chezmoi 會詢問幾個選項（名稱、Email、是否安裝 Oh My Zsh 等）。  
+### 重新設定選項
+
+若需要更改首次填寫的設定（例如關閉 Oh My Zsh 或字型安裝）：
+
+```sh
+~/my-dotfiles/bootstrap-chezmoi.sh --reconfigure
+```
+
+這會清除現有設定並重新詢問所有選項，完成後再執行 `--apply` 即可。
+
 詳細說明請見 [`docs/chezmoi-non-nix.md`](docs/chezmoi-non-nix.md)。
 
 ---
@@ -56,8 +75,11 @@ git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
 | `dot_tmux.conf` | `~/.tmux.conf` |
 | `dot_inputrc` | `~/.inputrc` |
 | `dot_config/nvim/` | `~/.config/nvim/` |
+| `dot_claude/settings.json.tmpl` | `~/.claude/settings.json` |
+| `dot_claude/executable_statusline-command.sh` | `~/.claude/statusline-command.sh` |
 
-Oh My Zsh 與 zsh 插件由 chezmoi 於首次 apply 時自動下載，不再隨 repo 一起 vendored。
+Oh My Zsh 與 zsh 插件由 chezmoi 於首次 apply 時自動下載，不再隨 repo 一起 vendored。  
+vim-plug 與 Neovim 插件亦於首次 apply 時自動安裝（需已安裝 `nvim`）。
 
 ---
 
