@@ -1,0 +1,19 @@
+{{- if .installTmuxPlugins }}
+#!/bin/bash
+set -euo pipefail
+
+echo ""
+echo "============================================================"
+echo " Stage 4: Installing tmux plugins via TPM"
+echo "============================================================"
+
+TPM_INSTALL="$HOME/.tmux/plugins/tpm/bin/install_plugins"
+
+if [ -x "$TPM_INSTALL" ]; then
+    "$TPM_INSTALL"
+    echo "==> Tmux plugins installed."
+else
+    echo "[WARN] TPM not found at $HOME/.tmux/plugins/tpm — skipping plugin install."
+    echo "       Run: chezmoi apply  (to fetch TPM via chezmoi external)"
+fi
+{{- end }}
