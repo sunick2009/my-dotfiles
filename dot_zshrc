@@ -123,5 +123,7 @@ search() { rg -p --glob '!node_modules/*' "$@"; }
 alias diff='difft'
 alias ls='ls --color=auto'
 
+command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh)"
+
 # Local overrides (not managed by chezmoi — safe to edit manually)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
