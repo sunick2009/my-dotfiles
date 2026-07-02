@@ -118,7 +118,7 @@ EOF
 test_environment() {
     echo ""
     echo "=== Environment ==="
-    for cmd in chezmoi zsh git curl tmux; do
+    for cmd in chezmoi zsh git curl tmux nvim; do
         if command -v "$cmd" >/dev/null 2>&1; then
             log_pass "$cmd is available ($(command -v "$cmd"))"
         else
@@ -151,6 +151,8 @@ test_files_exist() {
     assert_file_exists "nvim/templates/sh.tpl"         "$HOME/.config/nvim/templates/sh.tpl"
     assert_file_exists "nvim/templates/python.tpl"     "$HOME/.config/nvim/templates/python.tpl"
     assert_file_exists "nvim/templates/dockerfile.tpl" "$HOME/.config/nvim/templates/dockerfile.tpl"
+    assert_file_exists "claude/settings.json"          "$HOME/.claude/settings.json"
+    assert_file_exists "claude/statusline-command.sh"  "$HOME/.claude/statusline-command.sh"
 }
 
 test_not_symlinks() {
@@ -160,6 +162,7 @@ test_not_symlinks() {
     assert_not_symlink "tmux.conf" "$HOME/.tmux.conf"
     assert_not_symlink "inputrc"   "$HOME/.inputrc"
     assert_not_symlink "nvim/"     "$HOME/.config/nvim"
+    assert_not_symlink "claude/settings.json" "$HOME/.claude/settings.json"
 }
 
 test_init_vim_path_fix() {
@@ -175,6 +178,27 @@ test_tmux_conf() {
     echo ""
     echo "=== tmux.conf quality ==="
     assert_count "default-terminal defined once" "$HOME/.tmux.conf" "default-terminal" 1
+}
+
+test_claude_config() {
+    echo ""
+    echo "=== Claude Code config ==="
+    # Template should be rendered — no raw {{ }} left
+    assert_not_contains "settings.json: no raw template syntax" \
+        "$HOME/.claude/settings.json" "{{"
+    # Path should be expanded to the actual home dir
+    assert_contains "settings.json: statusline path uses HOME" \
+        "$HOME/.claude/settings.json" "$HOME/.claude/statusline-command.sh"
+    # Script should be executable
+    assert_cmd_ok "statusline-command.sh is executable" \
+        test -x "$HOME/.claude/statusline-command.sh"
+}
+
+test_zshrc_local() {
+    echo ""
+    echo "=== zshrc.local integration ==="
+    assert_contains "zshrc sources zshrc.local" \
+        "$HOME/.zshrc" "zshrc.local"
 }
 
 test_idempotency() {
@@ -223,6 +247,8 @@ main() {
     test_not_symlinks
     test_init_vim_path_fix
     test_tmux_conf
+    test_claude_config
+    test_zshrc_local
     test_idempotency
     test_bootstrap_script
 

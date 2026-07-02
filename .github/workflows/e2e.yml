@@ -21,29 +21,30 @@ jobs:
             image: ubuntu:22.04
             install: |
               apt-get update -y
-              apt-get install -y --no-install-recommends zsh git curl tmux ca-certificates
+              apt-get install -y --no-install-recommends zsh git curl tmux ca-certificates neovim
 
           - name: ubuntu-24.04
             image: ubuntu:24.04
             install: |
               apt-get update -y
-              apt-get install -y --no-install-recommends zsh git curl tmux ca-certificates
+              apt-get install -y --no-install-recommends zsh git curl tmux ca-certificates neovim
 
           - name: debian-12
             image: debian:12
             install: |
               apt-get update -y
-              apt-get install -y --no-install-recommends zsh git curl tmux ca-certificates
+              apt-get install -y --no-install-recommends zsh git curl tmux ca-certificates neovim
 
           - name: fedora-40
             image: fedora:40
             install: |
-              dnf install -y zsh git curl tmux
+              dnf install -y zsh git curl tmux neovim
 
           - name: rocky-9
             image: rockylinux:9
             install: |
-              dnf install -y --allowerasing zsh git curl tmux
+              dnf install -y epel-release
+              dnf install -y --allowerasing zsh git curl tmux neovim
 
     steps:
       - uses: actions/checkout@v4
