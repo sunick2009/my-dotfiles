@@ -16,6 +16,7 @@ If you are on NixOS, use Home Manager instead (see main README).
 
 Oh My Zsh and its plugins are fetched via `.chezmoiexternal.toml` on first apply
 (no vendored copy in the repo).
+TPM and tmux plugins are managed the same way when `installTmuxPlugins = true`.
 
 ---
 
@@ -49,9 +50,10 @@ During the first `chezmoi apply` you will be prompted for:
 | Full name | — | Stored in `~/.config/chezmoi/chezmoi.toml` |
 | Email | — | Same |
 | Install Oh My Zsh | `true` | Downloads OMZ + plugins via chezmoi external |
-| Install Hack fonts | `false` | Copies fonts from `fonts/mac_linux/` |
-| Change shell to zsh | `false` | Runs `chsh` — requires your password |
+| Install Hack fonts | `true` | Copies fonts from `fonts/mac_linux/` |
+| Change shell to zsh | `true` | Runs `chsh`; may require your password |
 | Run PlugInstall | `true` | First-run Neovim plugin install via vim-plug |
+| Install TPM plugins | `true` | Installs tmux plugins via TPM when available |
 
 You can change any answer by editing `~/.config/chezmoi/chezmoi.toml`.
 
@@ -126,6 +128,43 @@ To skip Oh My Zsh entirely, set `installOhMyZsh = false` in
 
 ---
 
+## Tmux
+
+The tmux config (`~/.tmux.conf`) is managed by chezmoi. TPM is fetched to
+`~/.tmux/plugins/tpm/` through `.chezmoiexternal.toml` when
+`installTmuxPlugins = true`.
+
+The first apply also runs TPM's `install_plugins` helper when TPM is present.
+This installs the plugins listed in `dot_tmux.conf`, including:
+
+- `christoomey/vim-tmux-navigator`
+- `tmux-plugins/tmux-yank`
+- `tmux-plugins/tmux-prefix-highlight`
+- `wfxr/tmux-power`
+- `tmux-plugins/tmux-resurrect`
+- `tmux-plugins/tmux-continuum`
+
+To skip TPM and tmux plugin installation, set `installTmuxPlugins = false` in
+`~/.config/chezmoi/chezmoi.toml` and run `chezmoi apply`.
+
+Because the TPM installer is a `run_once_` script, changing
+`installTmuxPlugins` after the first apply may not re-run plugin installation
+automatically. To install plugins manually, start tmux and press `prefix + I`,
+or run:
+
+```bash
+~/.tmux/plugins/tpm/bin/install_plugins
+```
+
+If you need chezmoi to re-run one-time scripts, delete the script state with:
+
+```bash
+chezmoi state delete-bucket --bucket=scriptState
+chezmoi apply --source ~/my-dotfiles
+```
+
+---
+
 ## Neovim
 
 Neovim is **not** installed by chezmoi. Install it separately:
@@ -163,7 +202,7 @@ Hack Nerd Font files are in `fonts/mac_linux/`. They are installed only if
 
 ## Known limitations
 
-- Neovim plugins are not installed during `chezmoi apply`; vim-plug bootstraps itself on first launch.
+- Neovim itself is not installed by chezmoi. Plugin installation runs during the first apply only when `installNeovimPlugins = true` and `nvim` is already available.
 - `changeShell` requires `chsh` which may need your login password or sudo on some systems.
 - The `run_once_` scripts only run once per machine. If you need to re-run them, delete the relevant entry in `~/.local/share/chezmoi/` (or use `chezmoi state delete-bucket --bucket=scriptState`).
 - Oh My Zsh updates (`omz update`) are independent of chezmoi — run them separately.

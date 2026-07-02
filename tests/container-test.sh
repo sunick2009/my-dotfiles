@@ -109,6 +109,7 @@ setup_chezmoi() {
     installFonts         = false
     changeShell          = false
     installNeovimPlugins = false
+    installTmuxPlugins   = false
 EOF
     log_info "chezmoi config written to $HOME/.config/chezmoi/chezmoi.toml"
 }

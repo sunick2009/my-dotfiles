@@ -45,7 +45,7 @@ git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
 ~/my-dotfiles/bootstrap-chezmoi.sh --dry-run
 ```
 
-首次執行時，chezmoi 會互動式詢問幾個選項（名稱、Email、是否安裝 Oh My Zsh 等），預設全部為 `true`。
+首次執行時，chezmoi 會互動式詢問幾個選項，包含名稱、Email、是否安裝 Oh My Zsh、字型、Neovim 插件與 tmux TPM 插件。布林選項預設為 `true`。
 
 ### 5. 套用
 
@@ -55,7 +55,7 @@ git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
 
 ### 重新設定選項
 
-若需要更改首次填寫的設定（例如關閉 Oh My Zsh 或字型安裝）：
+若需要更改首次填寫的設定（例如關閉 Oh My Zsh、字型安裝或 tmux TPM 插件安裝）：
 
 ```sh
 ~/my-dotfiles/bootstrap-chezmoi.sh --reconfigure
@@ -79,6 +79,7 @@ git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
 | `dot_claude/executable_statusline-command.sh` | `~/.claude/statusline-command.sh` |
 
 Oh My Zsh 與 zsh 插件由 chezmoi 於首次 apply 時自動下載，不再隨 repo 一起 vendored。  
+TPM 與 tmux 插件可於首次 apply 時自動安裝。  
 vim-plug 與 Neovim 插件亦於首次 apply 時自動安裝（需已安裝 `nvim`）。
 
 ---
@@ -111,6 +112,15 @@ vim-plug 與 Neovim 插件亦於首次 apply 時自動安裝（需已安裝 `nvi
 - tpope/vim-surround
 - arouene/vim-ansible-vault （用於 yaml, yaml.ansible）
 - hkupty/iron.nvim
+
+### Tmux 插件（由 TPM 管理）
+
+- christoomey/vim-tmux-navigator
+- tmux-plugins/tmux-yank
+- tmux-plugins/tmux-prefix-highlight
+- wfxr/tmux-power
+- tmux-plugins/tmux-resurrect
+- tmux-plugins/tmux-continuum
 
 ---
 
