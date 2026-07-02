@@ -58,6 +58,31 @@ check_chezmoi() {
     print_ok "chezmoi $(chezmoi --version | awk '{print $3}')"
 }
 
+cmd_to_pkg() {
+    case "$1" in
+        nvim) echo "neovim" ;;
+        *)    echo "$1" ;;
+    esac
+}
+
+detect_install_cmd() {
+    local pkgs=("$@")
+    local pkg_list="${pkgs[*]}"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        echo "brew install ${pkg_list}"
+    elif command -v apt-get >/dev/null 2>&1; then
+        echo "sudo apt-get update && sudo apt-get install -y ${pkg_list}"
+    elif command -v dnf >/dev/null 2>&1; then
+        echo "sudo dnf install -y ${pkg_list}"
+    elif command -v pacman >/dev/null 2>&1; then
+        echo "sudo pacman -S ${pkg_list}"
+    elif command -v zypper >/dev/null 2>&1; then
+        echo "sudo zypper install ${pkg_list}"
+    else
+        echo "# unknown package manager — install manually: ${pkg_list}"
+    fi
+}
+
 check_deps() {
     local missing=()
     for cmd in zsh git curl tmux nvim; do
@@ -68,13 +93,25 @@ check_deps() {
             missing+=("$cmd")
         fi
     done
-    if [[ ${#missing[@]} -gt 0 ]]; then
-        echo ""
-        print_warn "Missing: ${missing[*]}"
-        echo "Install them before running --apply."
-        return 1
+
+    if [[ ${#missing[@]} -eq 0 ]]; then
+        return 0
     fi
-    return 0
+
+    local pkgs=()
+    for cmd in "${missing[@]}"; do
+        pkgs+=("$(cmd_to_pkg "$cmd")")
+    done
+
+    echo ""
+    print_warn "Missing: ${missing[*]}"
+    echo ""
+    echo "  Recommended install command:"
+    echo ""
+    echo "    $(detect_install_cmd "${pkgs[@]}")"
+    echo ""
+    echo "  After installing, re-run: $0 --doctor"
+    return 1
 }
 
 # ── Modes ─────────────────────────────────────────────────────────────────────
