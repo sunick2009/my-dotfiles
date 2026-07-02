@@ -108,3 +108,6 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
+
+# Local overrides (not managed by chezmoi — safe to edit manually)
+[[ -f ~/.zshrc.local ]] && source ~/.zshrc.local

@@ -17,20 +17,22 @@ MODE=""
 # ── Argument parsing ──────────────────────────────────────────────────────────
 
 usage() {
-    echo "Usage: $0 [--doctor | --dry-run | --apply | --reconfigure]"
+    echo "Usage: $0 [--doctor | --dry-run | --apply | --reconfigure | --migrate-bash]"
     echo ""
-    echo "  --doctor       Check that chezmoi and dependencies are installed"
-    echo "  --dry-run      Show what chezmoi would apply (no changes made)"
-    echo "  --apply        Apply dotfiles to your home directory"
-    echo "  --reconfigure  Re-run interactive setup (resets chezmoi config)"
+    echo "  --doctor        Check that chezmoi and dependencies are installed"
+    echo "  --dry-run       Show what chezmoi would apply (no changes made)"
+    echo "  --apply         Apply dotfiles to your home directory"
+    echo "  --reconfigure   Re-run interactive setup (resets chezmoi config)"
+    echo "  --migrate-bash  Extract env vars from ~/.bashrc into ~/.zshrc.local"
     exit 1
 }
 
 case "${1:-}" in
-    --doctor)       MODE="doctor" ;;
-    --dry-run)      MODE="dry-run" ;;
-    --apply)        MODE="apply" ;;
-    --reconfigure)  MODE="reconfigure" ;;
+    --doctor)        MODE="doctor" ;;
+    --dry-run)       MODE="dry-run" ;;
+    --apply)         MODE="apply" ;;
+    --reconfigure)   MODE="reconfigure" ;;
+    --migrate-bash)  MODE="migrate-bash" ;;
     *)              usage ;;
 esac
 
@@ -193,11 +195,74 @@ apply() {
     echo ""
 }
 
+migrate_bash() {
+    echo ""
+    echo "=== bash → zsh migration ==="
+    echo ""
+
+    local bashrc="$HOME/.bashrc"
+    local zshrc_local="$HOME/.zshrc.local"
+
+    if [[ ! -f "$bashrc" ]]; then
+        print_warn "~/.bashrc not found — nothing to migrate."
+        echo ""
+        return 1
+    fi
+
+    print_info "Source : $bashrc"
+    print_info "Target : $zshrc_local"
+    echo ""
+
+    # Extract candidate lines:
+    #   export VAR=...   — custom env vars
+    #   export PATH=...  — PATH modifications
+    # Skip bash-specific internals and system noise
+    local extracted
+    extracted=$(grep -E '^[[:space:]]*export [A-Za-z_][A-Za-z0-9_]*=' "$bashrc" \
+        | grep -v -E 'BASH_|HISTSIZE|HISTFILESIZE|HISTFILE|HISTCONTROL|PS1|PS2|PROMPT_COMMAND|DBUS_SESSION|COLORTERM|LS_COLORS|LESSOPEN|LESSCLOSE|MANPATH' \
+        | sed 's/^[[:space:]]*//' \
+        | sort -u)
+
+    if [[ -z "$extracted" ]]; then
+        print_info "No custom export lines found in ~/.bashrc."
+        echo ""
+        return 0
+    fi
+
+    echo "  Found the following lines to migrate:"
+    echo ""
+    while IFS= read -r line; do
+        echo "    $line"
+    done <<< "$extracted"
+    echo ""
+
+    # Check if already migrated (idempotent by date marker)
+    local marker="# migrated from .bashrc on"
+    if grep -q "$marker" "$zshrc_local" 2>/dev/null; then
+        echo "  [!!]  ~/.zshrc.local already contains a previous migration."
+        echo "        New entries will be appended — review and deduplicate manually."
+        echo ""
+    fi
+
+    printf '\n%s %s\n' "$marker" "$(date '+%Y-%m-%d')" >> "$zshrc_local"
+    while IFS= read -r line; do
+        echo "$line" >> "$zshrc_local"
+    done <<< "$extracted"
+
+    print_ok "Migrated $(echo "$extracted" | wc -l | tr -d ' ') line(s) to $zshrc_local"
+    echo ""
+    echo "  Review and edit the file before reloading:"
+    echo "    \$EDITOR $zshrc_local"
+    echo "    source $zshrc_local"
+    echo ""
+}
+
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 
 case "$MODE" in
-    doctor)       doctor ;;
-    dry-run)      dry_run ;;
-    apply)        apply ;;
-    reconfigure)  reconfigure ;;
+    doctor)        doctor ;;
+    dry-run)       dry_run ;;
+    apply)         apply ;;
+    reconfigure)   reconfigure ;;
+    migrate-bash)  migrate_bash ;;
 esac
