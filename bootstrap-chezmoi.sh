@@ -94,12 +94,22 @@ doctor() {
     echo ""
 }
 
+ensure_config() {
+    local cfg="$HOME/.config/chezmoi/chezmoi.toml"
+    if [[ ! -f "$cfg" ]] || ! grep -q "installOhMyZsh" "$cfg" 2>/dev/null; then
+        print_info "Running: chezmoi init --source \"$REPO_DIR\" (generates config from template)"
+        echo ""
+        chezmoi init --source "$REPO_DIR"
+        echo ""
+    fi
+}
+
 dry_run() {
     echo ""
     echo "=== chezmoi dry-run (no changes will be made) ==="
     echo ""
     check_chezmoi
-    echo ""
+    ensure_config
     print_info "Running: chezmoi diff --source \"$REPO_DIR\""
     echo ""
     chezmoi diff --source "$REPO_DIR"
@@ -117,6 +127,7 @@ apply() {
     print_info "Source: $REPO_DIR"
     print_info "Target: $HOME"
     echo ""
+    ensure_config
     print_info "Running: chezmoi apply --source \"$REPO_DIR\""
     echo ""
     chezmoi apply --source "$REPO_DIR"
