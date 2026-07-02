@@ -27,7 +27,11 @@ else
 fi
 
 echo "  [--]  Running :PlugInstall (headless)..."
-nvim --headless +PlugInstall +qall 2>&1
+# Colorscheme errors (E185) on first run are expected: plugins aren't
+# downloaded yet when init.vim is sourced. Filter them to avoid confusion.
+nvim --headless +PlugInstall +qall 2>&1 \
+    | grep -v -E "^Error detected|E185|Cannot find color scheme" \
+    || true
 echo "  [OK]  Neovim plugins installed."
 {{- else }}
 echo "  [--]  Skipping neovim plugin install (installNeovimPlugins=false)."
