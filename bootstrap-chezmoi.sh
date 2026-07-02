@@ -185,9 +185,9 @@ apply() {
     print_info "Target: $HOME"
     echo ""
     ensure_config
-    print_info "Running: chezmoi apply --source \"$REPO_DIR\""
+    print_info "Running: chezmoi apply --verbose --source \"$REPO_DIR\""
     echo ""
-    chezmoi apply --source "$REPO_DIR"
+    chezmoi apply --verbose --source "$REPO_DIR"
     echo ""
     print_ok "Done. Restart your shell for changes to take effect."
     echo ""
