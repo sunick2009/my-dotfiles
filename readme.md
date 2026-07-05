@@ -36,7 +36,7 @@ git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
 ```
   Recommended install command:
 
-    sudo apt-get update && sudo apt-get install -y zsh tmux neovim
+    sudo apt-get update && sudo apt-get install -y zsh tmux neovim jq
 ```
 
 ### 4. 預覽變更
@@ -75,12 +75,13 @@ git clone https://github.com/sunick2009/my-dotfiles.git ~/my-dotfiles
 | `dot_tmux.conf` | `~/.tmux.conf` |
 | `dot_inputrc` | `~/.inputrc` |
 | `dot_config/nvim/` | `~/.config/nvim/` |
-| `dot_claude/settings.json.tmpl` | `~/.claude/settings.json` |
+| `.chezmoiscripts/run_after_50_merge-claude-settings.sh.tmpl` | 合併 managed keys 至 `~/.claude/settings.json` |
 | `dot_claude/executable_statusline-command.sh` | `~/.claude/statusline-command.sh` |
 
 Oh My Zsh 與 zsh 插件由 chezmoi 於首次 apply 時自動下載，不再隨 repo 一起 vendored。  
 TPM 與 tmux 插件可於首次 apply 時自動安裝。  
 vim-plug 與 Neovim 插件亦於首次 apply 時自動安裝（需已安裝 `nvim`）。
+Claude Code 的 `settings.json` 會透過 `jq` 與既有設定合併；dotfiles 管理的 key 會覆蓋同名值，未知 key 會保留。
 
 ---
 

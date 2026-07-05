@@ -13,6 +13,8 @@ If you are on NixOS, use Home Manager instead (see main README).
 | `dot_tmux.conf` | `~/.tmux.conf` |
 | `dot_inputrc` | `~/.inputrc` |
 | `dot_config/nvim/` | `~/.config/nvim/` |
+| `.chezmoiscripts/run_after_50_merge-claude-settings.sh.tmpl` | merges managed keys into `~/.claude/settings.json` |
+| `dot_claude/executable_statusline-command.sh` | `~/.claude/statusline-command.sh` |
 
 Oh My Zsh and its plugins are fetched via `.chezmoiexternal.toml` on first apply
 (no vendored copy in the repo).
@@ -23,7 +25,7 @@ TPM and tmux plugins are managed the same way when `installTmuxPlugins = true`.
 ## Prerequisites
 
 - `chezmoi` installed ([install guide](https://www.chezmoi.io/install/))
-- `zsh`, `git`, `curl`, `tmux` available
+- `zsh`, `git`, `curl`, `tmux`, `jq` available
 
 ---
 
@@ -179,6 +181,19 @@ bootstrap block), or you can run `:PlugInstall` manually.
 
 ---
 
+## Claude Code
+
+Claude Code statusline integration is managed by chezmoi, but
+`~/.claude/settings.json` is not replaced as a whole file. Each apply runs a
+merge script that keeps existing unknown keys and lets the dotfiles-managed
+keys win on conflicts.
+
+This is intentionally conservative for remote machines where Claude Code may
+have written keys that are not known to this repository. If the existing
+`settings.json` is invalid JSON, the merge script exits without overwriting it.
+
+---
+
 ## Fonts
 
 Hack Nerd Font files are in `fonts/mac_linux/`. They are installed only if
@@ -203,6 +218,7 @@ Hack Nerd Font files are in `fonts/mac_linux/`. They are installed only if
 ## Known limitations
 
 - Neovim itself is not installed by chezmoi. Plugin installation runs during the first apply only when `installNeovimPlugins = true` and `nvim` is already available.
+- Claude Code settings merging requires `jq`; invalid existing JSON is left unchanged.
 - `changeShell` requires `chsh` which may need your login password or sudo on some systems.
 - The `run_once_` scripts only run once per machine. If you need to re-run them, delete the relevant entry in `~/.local/share/chezmoi/` (or use `chezmoi state delete-bucket --bucket=scriptState`).
 - Oh My Zsh updates (`omz update`) are independent of chezmoi — run them separately.

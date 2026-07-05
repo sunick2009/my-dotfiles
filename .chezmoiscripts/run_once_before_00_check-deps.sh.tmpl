@@ -8,7 +8,7 @@ echo "════════════════════════�
 echo ""
 
 MISSING=()
-for cmd in zsh git curl tmux nvim; do
+for cmd in zsh git curl tmux nvim jq; do
     if command -v "$cmd" >/dev/null 2>&1; then
         echo "  [OK]  $cmd ($(command -v "$cmd"))"
     else

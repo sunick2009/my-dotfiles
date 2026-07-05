@@ -87,7 +87,7 @@ detect_install_cmd() {
 
 check_deps() {
     local missing=()
-    for cmd in zsh git curl tmux nvim; do
+    for cmd in zsh git curl tmux nvim jq; do
         if command -v "$cmd" >/dev/null 2>&1; then
             print_ok "$cmd ($(command -v "$cmd"))"
         else

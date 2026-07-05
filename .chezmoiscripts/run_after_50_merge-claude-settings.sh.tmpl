@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+settings_dir="{{ .chezmoi.homeDir }}/.claude"
+settings_file="$settings_dir/settings.json"
+tmp_dir="${TMPDIR:-/tmp}"
+managed_file="$(mktemp "$tmp_dir/claude-managed-settings.XXXXXX")"
+merged_file="$(mktemp "$tmp_dir/claude-merged-settings.XXXXXX")"
+
+cleanup() {
+    rm -f "$managed_file" "$merged_file"
+}
+trap cleanup EXIT
+
+mkdir -p "$settings_dir"
+
+cat > "$managed_file" <<'JSON'
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash {{ .chezmoi.homeDir }}/.claude/statusline-command.sh"
+  },
+  "effortLevel": "high",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
+  "agentPushNotifEnabled": true
+}
+JSON
+
+if ! command -v jq >/dev/null 2>&1; then
+    echo "  [!!]  jq is required to merge Claude settings." >&2
+    exit 1
+fi
+
+if [ -e "$settings_file" ]; then
+    if ! jq -e 'type == "object"' "$settings_file" >/dev/null; then
+        echo "  [!!]  $settings_file is not a valid JSON object; leaving it unchanged." >&2
+        exit 1
+    fi
+    jq -S -s '.[0] * .[1]' "$settings_file" "$managed_file" > "$merged_file"
+else
+    jq -S . "$managed_file" > "$merged_file"
+fi
+
+if [ -e "$settings_file" ] && cmp -s "$merged_file" "$settings_file"; then
+    echo "  [OK]  Claude settings already up to date."
+else
+    install -m 0644 "$merged_file" "$settings_file"
+    echo "  [OK]  Claude settings merged into $settings_file."
+fi

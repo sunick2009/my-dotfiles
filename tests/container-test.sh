@@ -78,6 +78,17 @@ assert_cmd_ok() {
     fi
 }
 
+assert_json_value() {
+    local label="$1" path="$2" query="$3" expected="$4"
+    local actual
+    actual=$(jq -r "$query" "$path" 2>/dev/null || true)
+    if [ "$actual" = "$expected" ]; then
+        log_pass "$label: $query == $expected"
+    else
+        log_fail "$label: $query == $actual (expected $expected)"
+    fi
+}
+
 assert_output_contains() {
     local label="$1" pattern="$2"; shift 2
     local out
@@ -119,7 +130,7 @@ EOF
 test_environment() {
     echo ""
     echo "=== Environment ==="
-    for cmd in chezmoi zsh git curl tmux nvim; do
+    for cmd in chezmoi zsh git curl tmux nvim jq; do
         if command -v "$cmd" >/dev/null 2>&1; then
             log_pass "$cmd is available ($(command -v "$cmd"))"
         else
@@ -133,6 +144,18 @@ test_apply() {
     echo "=== chezmoi apply ==="
     log_info "Running: chezmoi init --source \"$REPO_DIR\""
     chezmoi init --source "$REPO_DIR"
+
+    log_info "Seeding existing Claude settings with unmanaged keys"
+    mkdir -p "$HOME/.claude"
+    cat > "$HOME/.claude/settings.json" <<'EOF'
+{
+  "model": "claude-test-model",
+  "enabledPlugins": {
+    "example@local": true
+  },
+  "effortLevel": "medium"
+}
+EOF
 
     log_info "Running: chezmoi apply --source \"$REPO_DIR\""
     chezmoi apply --source "$REPO_DIR"
@@ -190,6 +213,12 @@ test_claude_config() {
     # Path should be expanded to the actual home dir
     assert_contains "settings.json: statusline path uses HOME" \
         "$HOME/.claude/settings.json" "$HOME/.claude/statusline-command.sh"
+    assert_json_value "settings.json: unmanaged model key preserved" \
+        "$HOME/.claude/settings.json" ".model" "claude-test-model"
+    assert_json_value "settings.json: unmanaged nested key preserved" \
+        "$HOME/.claude/settings.json" ".enabledPlugins[\"example@local\"]" "true"
+    assert_json_value "settings.json: managed key wins" \
+        "$HOME/.claude/settings.json" ".effortLevel" "high"
     # Script should be executable
     assert_cmd_ok "statusline-command.sh is executable" \
         test -x "$HOME/.claude/statusline-command.sh"
@@ -206,7 +235,7 @@ test_idempotency() {
     echo ""
     echo "=== Idempotency: chezmoi diff is empty after apply ==="
     local diff_out
-    diff_out=$(chezmoi diff --source "$REPO_DIR" 2>&1 || true)
+    diff_out=$(chezmoi diff --source "$REPO_DIR" --exclude scripts 2>&1 || true)
     if [ -z "$diff_out" ]; then
         log_pass "chezmoi diff is empty (apply is idempotent)"
     else
