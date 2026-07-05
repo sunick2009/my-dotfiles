@@ -50,7 +50,7 @@ check_chezmoi() {
         if [[ "$(uname -s)" == "Darwin" ]]; then
             echo "  brew install chezmoi"
         else
-            echo "  sh -c \"\$(curl -fsLS get.chezmoi.io)\""
+            echo "  sh -c \"\$(curl -fsLS https://get.chezmoi.io)\" -- -b ~/.local/bin"
             echo "  (review the script before running — never blindly pipe to shell)"
         fi
         echo ""

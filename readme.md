@@ -16,7 +16,7 @@
 brew install chezmoi
 
 # Linux（下載 binary，請先確認腳本內容再執行）
-sh -c "$(curl -fsLS get.chezmoi.io)"
+sh -c "$(curl -fsLS https://get.chezmoi.io)" -- -b ~/.local/bin
 ```
 
 ### 2. Clone 此 repo
