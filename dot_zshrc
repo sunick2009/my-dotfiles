@@ -123,7 +123,25 @@ search() { rg -p --glob '!node_modules/*' "$@"; }
 alias diff='difft'
 alias ls='ls --color=auto'
 
-command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh)"
+# Atuin private subshell mode: in a private shell we must skip `atuin init zsh`
+# entirely — once the Atuin hooks are installed they record every command to the
+# Atuin SQLite database, and `fc -p` alone cannot stop that.
+if [[ "$ATUIN_PRIVATE" == 1 ]]; then
+    # Push a fresh, empty history stack: keeps in-memory history for this
+    # session only and detaches it from the parent shell's history.
+    fc -p
+    # Never persist: no history file, save nothing on exit.
+    unset HISTFILE
+    SAVEHIST=0
+else
+    command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh)"
+fi
+
+# Start a private subshell: temporary in-memory history only, nothing written
+# to the zsh history file or the Atuin database.
+zsh-private() {
+    ATUIN_PRIVATE=1 zsh "$@"
+}
 
 # Local overrides (not managed by chezmoi — safe to edit manually)
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
