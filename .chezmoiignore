@@ -3,6 +3,7 @@ legacy/
 bootstrap-chezmoi.sh
 docs/
 fonts/
+tests/
 README.md
 readme.md
 .gitmodules
